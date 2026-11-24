@@ -62,7 +62,8 @@ button{font:inherit;cursor:pointer}
 .stars button{background:none;border:0;font-size:26px;color:#d9a441;padding:6px 4px;line-height:1}
 #toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translate(-50%,30px);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:14px;opacity:0;transition:.3s;pointer-events:none;max-width:90%;text-align:center;z-index:5}
 #toast.on{opacity:1;transform:translate(-50%,0)}
-[hidden]{display:none!important}.ser{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:6px;color:var(--mute);font-size:14px}.ser input{width:58px;padding:6px 8px;text-align:center}
+[hidden]{display:none!important}.cvr{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.cvr .empty{grid-column:1/-1}.cvb{background:var(--bg);border:3px solid var(--line);border-radius:10px;padding:0;overflow:hidden;aspect-ratio:2/3}.cvb img{width:100%;height:100%;object-fit:cover;display:block}.cvb[aria-pressed="true"]{border-color:var(--teal-d)}
+.ser{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:6px;color:var(--mute);font-size:14px}.ser input{width:58px;padding:6px 8px;text-align:center}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
@@ -80,7 +81,7 @@ button{font:inherit;cursor:pointer}
 <input id="t" placeholder="Título do livro" autocomplete="off">
 <input id="a" placeholder="Autor (opcional)" autocomplete="off">
 <div class="fields" id="sf" hidden><input id="ss" type="number" min="1" inputmode="numeric" placeholder="Temporada" aria-label="Temporada"><input id="se" type="number" min="0" inputmode="numeric" placeholder="Episódio" aria-label="Episódio"></div><div class="fields"><input id="d" type="date" aria-label="Data"><label class="pick"><input id="c" type="file" accept="image/*"><span id="cn">Adicionar capa</span></label></div>
-<div class="stars" id="stars" role="group" aria-label="Nota"><span>Nota</span><button type="button" data-s="1" aria-label="1 estrela">☆</button><button type="button" data-s="2" aria-label="2 estrelas">☆</button><button type="button" data-s="3" aria-label="3 estrelas">☆</button><button type="button" data-s="4" aria-label="4 estrelas">☆</button><button type="button" data-s="5" aria-label="5 estrelas">☆</button></div>
+<button type="button" class="btn" id="cvS" style="background:var(--card);color:var(--teal-d);border:1px solid var(--teal-d)">Buscar capa na internet</button><div class="cvr" id="cvR" hidden></div><div class="stars" id="stars" role="group" aria-label="Nota"><span>Nota</span><button type="button" data-s="1" aria-label="1 estrela">☆</button><button type="button" data-s="2" aria-label="2 estrelas">☆</button><button type="button" data-s="3" aria-label="3 estrelas">☆</button><button type="button" data-s="4" aria-label="4 estrelas">☆</button><button type="button" data-s="5" aria-label="5 estrelas">☆</button></div>
 <button class="btn" id="go">Adicionar à estante</button>
 </div>
 <div class="card list"><h2 id="hList">Livros lidos</h2><div id="list"></div></div>
@@ -336,7 +337,7 @@ function today(){var d=new Date();return d.getFullYear()+"-"+("0"+(d.getMonth()+
 function fmt(s){if(!s)return"";var p=String(s).split("-");return p.length===3?p[2]+"/"+p[1]+"/"+p[0]:""}
 function starTxt(r){return r?"★★★★★".slice(0,r)+"☆☆☆☆☆".slice(0,5-r):""}
 function paintStars(){var b=document.querySelectorAll("#stars button");for(var i=0;i<b.length;i++){b[i].textContent=i<rating?"★":"☆";b[i].setAttribute("aria-pressed",i<rating?"true":"false")}}
-function resetExtra(){rating=0;cover="";$("d").value=today();$("c").value="";$("ss").value="";$("se").value="";$("cn").textContent="Adicionar capa";paintStars()}
+function resetExtra(){rating=0;cover="";$("d").value=today();$("c").value="";$("cvR").hidden=true;$("cvR").innerHTML="";$("ss").value="";$("se").value="";$("cn").textContent="Adicionar capa";paintStars()}
 function add(){
 var t=$("t").value.trim(),a=$("a").value.trim();
 if(!t){toast("Digite o título do livro.");$("t").focus();return}
@@ -348,6 +349,27 @@ var after=lvlOf(books.length);
 toast(after>before?"A casa evoluiu: "+NAMES[after]+"!":"“"+t+"” entrou na estante.")}
 
 $("go").addEventListener("click",add);
+function jsonp(u){return new Promise(function(ok,no){var n="cb"+Date.now()+Math.floor(Math.random()*999),s=document.createElement("script"),to=setTimeout(function(){cl();no()},9000);function cl(){clearTimeout(to);delete window[n];s.remove()}window[n]=function(r){cl();ok(r)};s.onerror=function(){cl();no()};s.src=u+"&callback="+n;document.head.appendChild(s)})}
+function getJ(u){return fetch(u).then(function(r){return r.json()})}
+function findCovers(q,k){
+if(k==="l"){return Promise.all([
+getJ("https://www.googleapis.com/books/v1/volumes?maxResults=8&printType=books&q="+encodeURIComponent(q)).then(function(r){return(r.items||[]).map(function(x){var v=x.volumeInfo||{},il=v.imageLinks||{},u=il.thumbnail||il.smallThumbnail;return u?{u:u.replace("http:","https:"),t:v.title}:null})}).catch(function(){return[]}),
+getJ("https://openlibrary.org/search.json?limit=8&fields=title,cover_i&q="+encodeURIComponent(q)).then(function(r){return(r.docs||[]).map(function(x){return x.cover_i?{u:"https://covers.openlibrary.org/b/id/"+x.cover_i+"-M.jpg",t:x.title}:null})}).catch(function(){return[]})
+]).then(function(a){return a[0].concat(a[1])})}
+var med=k==="f"?"media=movie&entity=movie":"media=tvShow&entity=tvSeason";
+return jsonp("https://itunes.apple.com/search?limit=12&country=BR&"+med+"&term="+encodeURIComponent(q)).then(function(r){return(r.results||[]).map(function(x){var u=x.artworkUrl100;return u?{u:u.replace(/\/\d+x\d+bb/,"/300x450bb"),o:u,t:x.trackName||x.collectionName}:null})})}
+function pickCov(im,b){var bs=document.querySelectorAll(".cvb");for(var i=0;i<bs.length;i++)bs[i].setAttribute("aria-pressed","false");b.setAttribute("aria-pressed","true");
+var src=im.currentSrc||im.src;cover=src;$("cn").textContent="Capa escolhida ✓";
+var t=new Image();t.crossOrigin="anonymous";t.referrerPolicy="no-referrer";t.onload=function(){try{var s=Math.min(1,160/t.naturalHeight),c=document.createElement("canvas");c.width=Math.max(1,Math.round(t.naturalWidth*s));c.height=Math.max(1,Math.round(t.naturalHeight*s));c.getContext("2d").drawImage(t,0,0,c.width,c.height);cover=c.toDataURL("image/jpeg",0.7)}catch(e){}};t.src=src}
+function showCov(list){var box=$("cvR");box.hidden=false;
+if(!list.length){box.innerHTML='<p class="empty">Nenhuma capa encontrada. Use "Adicionar capa" para fotografar ou escolher da galeria.</p>';return}
+box.innerHTML="";list.forEach(function(x){var b=document.createElement("button");b.type="button";b.className="cvb";b.setAttribute("aria-label","Usar capa de "+(x.t||"resultado"));
+var im=new Image();im.referrerPolicy="no-referrer";im.alt="";im.src=x.u;if(x.o)im.onerror=function(){im.onerror=null;im.src=x.o};
+b.appendChild(im);b.onclick=function(){pickCov(im,b)};box.appendChild(b)})}
+$("cvS").addEventListener("click",function(){var t=$("t").value.trim();if(!t){toast("Digite o título primeiro.");$("t").focus();return}
+var box=$("cvR");box.hidden=false;box.innerHTML='<p class="empty">Buscando capas...</p>';
+var q=t+(col==="l"&&$("a").value.trim()?" "+$("a").value.trim():"");
+findCovers(q,col).then(function(r){var seen={},o=[];r.forEach(function(x){if(x&&!seen[x.u]){seen[x.u]=1;o.push(x)}});showCov(o.slice(0,12))}).catch(function(){box.innerHTML='<p class="empty">Não foi possível buscar agora. A busca precisa de internet. Use "Adicionar capa" para fotografar ou escolher da galeria.</p>'})});
 $("top").addEventListener("click",function(e){var k=e.target.getAttribute("data-c");if(k&&k!==col)setCol(k)});
 $("list").addEventListener("click",function(e){var t=e.target,i,b;
 if((i=t.getAttribute("data-ep"))!==null&&(b=books[+i])){b.e=(+b.e||0)+1;b.u=today();save();render();toast(b.t+": T"+(+b.s||1)+" E"+b.e)}
@@ -383,9 +405,9 @@ $("bkIn").addEventListener("change",function(){var f=this.files&&this.files[0],i
 rd.onload=function(){inp.value="";try{var o=JSON.parse(rd.result);
 if(!o||!Array.isArray(o.livros)||!Array.isArray(o.lista))throw 0;
 var ok=function(x){return x&&typeof x.t==="string"&&x.t};
-var nb=o.livros.filter(ok).map(function(x){return{t:String(x.t).slice(0,200),a:String(x.a||"").slice(0,200),d:+x.d||Date.now(),r:clamp(+x.r||0,0,5),w:/^\d{4}-\d{2}-\d{2}$/.test(x.w||"")?x.w:"",c:typeof x.c==="string"&&x.c.indexOf("data:image/")===0?x.c:""}});
+var nb=o.livros.filter(ok).map(function(x){return{t:String(x.t).slice(0,200),a:String(x.a||"").slice(0,200),d:+x.d||Date.now(),r:clamp(+x.r||0,0,5),w:/^\d{4}-\d{2}-\d{2}$/.test(x.w||"")?x.w:"",c:typeof x.c==="string"&&/^(data:image\/|https:\/\/)/.test(x.c)?x.c:""}});
 var nw=o.lista.filter(ok).map(function(x){return{t:String(x.t).slice(0,200),a:String(x.a||"").slice(0,200),k:x.k==="p"?"p":"i"}});
-var cl=function(a,sr){return a.filter(ok).map(function(x){var r={t:String(x.t).slice(0,200),a:String(x.a||"").slice(0,200),d:+x.d||Date.now(),r:clamp(+x.r||0,0,5),w:/^\d{4}-\d{2}-\d{2}$/.test(x.w||"")?x.w:"",c:typeof x.c==="string"&&x.c.indexOf("data:image/")===0?x.c:""};if(sr){r.s=Math.max(1,Math.floor(+x.s)||1);r.e=Math.max(0,Math.floor(+x.e)||0);r.u=/^\d{4}-\d{2}-\d{2}$/.test(x.u||"")?x.u:""}return r})};
+var cl=function(a,sr){return a.filter(ok).map(function(x){var r={t:String(x.t).slice(0,200),a:String(x.a||"").slice(0,200),d:+x.d||Date.now(),r:clamp(+x.r||0,0,5),w:/^\d{4}-\d{2}-\d{2}$/.test(x.w||"")?x.w:"",c:typeof x.c==="string"&&/^(data:image\/|https:\/\/)/.test(x.c)?x.c:""};if(sr){r.s=Math.max(1,Math.floor(+x.s)||1);r.e=Math.max(0,Math.floor(+x.e)||0);r.u=/^\d{4}-\d{2}-\d{2}$/.test(x.u||"")?x.u:""}return r})};
 var cw=function(a){return a.filter(ok).map(function(x){return{t:String(x.t).slice(0,200),a:String(x.a||"").slice(0,200),k:x.k==="p"?"p":"i"}})};
 var nf=Array.isArray(o.filmes)?cl(o.filmes):ST.f.b,nfw=Array.isArray(o.filmesLista)?cw(o.filmesLista):ST.f.w,ns=Array.isArray(o.series)?cl(o.series,1):ST.s.b,nsw=Array.isArray(o.seriesLista)?cw(o.seriesLista):ST.s.w;
 if(!confirm("Substituir os dados atuais por este backup? Ele tem "+nb.length+" livros, "+nf.length+" filmes e "+ns.length+" séries, além das listas."))return;
