@@ -351,18 +351,24 @@ toast(after>before?"A casa evoluiu: "+NAMES[after]+"!":"“"+t+"” entrou na es
 $("go").addEventListener("click",add);
 function jsonp(u){return new Promise(function(ok,no){var n="cb"+Date.now()+Math.floor(Math.random()*999),s=document.createElement("script"),to=setTimeout(function(){cl();no()},9000);function cl(){clearTimeout(to);delete window[n];s.remove()}window[n]=function(r){cl();ok(r)};s.onerror=function(){cl();no()};s.src=u+"&callback="+n;document.head.appendChild(s)})}
 function getJ(u){return fetch(u).then(function(r){return r.json()})}
-function findCovers(q,k){
+var fe=[];
+function src(n,p){return p.catch(function(){fe.push(n);return[]})}
+function flat(a){return a.reduce(function(x,y){return x.concat(y)},[])}
+function wiki(q,suf){return getJ("https://pt.wikipedia.org/w/api.php?action=query&generator=search&gsrlimit=8&prop=pageimages&piprop=thumbnail&pithumbsize=300&format=json&origin=*&gsrsearch="+encodeURIComponent(q+" "+suf)).then(function(r){var p=(r.query&&r.query.pages)||{};return Object.keys(p).map(function(i){return p[i]}).filter(function(x){return x.thumbnail}).sort(function(x,y){return x.index-y.index}).map(function(x){return{u:x.thumbnail.source,t:x.title}})})}
+function itunes(q,k,c){var med=k==="f"?"media=movie&entity=movie":"media=tvShow&entity=tvSeason";return jsonp("https://itunes.apple.com/search?limit=12&country="+c+"&"+med+"&term="+encodeURIComponent(q)).then(function(r){return(r.results||[]).filter(function(x){return x.artworkUrl100}).map(function(x){return{u:x.artworkUrl100.replace(/\/\d+x\d+bb/,"/300x450bb"),o:x.artworkUrl100,t:x.trackName||x.collectionName}})})}
+function findCovers(q,k){fe=[];
 if(k==="l"){return Promise.all([
-getJ("https://www.googleapis.com/books/v1/volumes?maxResults=8&printType=books&q="+encodeURIComponent(q)).then(function(r){return(r.items||[]).map(function(x){var v=x.volumeInfo||{},il=v.imageLinks||{},u=il.thumbnail||il.smallThumbnail;return u?{u:u.replace("http:","https:"),t:v.title}:null})}).catch(function(){return[]}),
-getJ("https://openlibrary.org/search.json?limit=8&fields=title,cover_i&q="+encodeURIComponent(q)).then(function(r){return(r.docs||[]).map(function(x){return x.cover_i?{u:"https://covers.openlibrary.org/b/id/"+x.cover_i+"-M.jpg",t:x.title}:null})}).catch(function(){return[]})
-]).then(function(a){return a[0].concat(a[1])})}
-var med=k==="f"?"media=movie&entity=movie":"media=tvShow&entity=tvSeason";
-return jsonp("https://itunes.apple.com/search?limit=12&country=BR&"+med+"&term="+encodeURIComponent(q)).then(function(r){return(r.results||[]).map(function(x){var u=x.artworkUrl100;return u?{u:u.replace(/\/\d+x\d+bb/,"/300x450bb"),o:u,t:x.trackName||x.collectionName}:null})})}
+src("Google Books",getJ("https://www.googleapis.com/books/v1/volumes?maxResults=8&printType=books&q="+encodeURIComponent(q)).then(function(r){return(r.items||[]).map(function(x){var v=x.volumeInfo||{},il=v.imageLinks||{},u=il.thumbnail||il.smallThumbnail;return u?{u:u.replace("http:","https:"),t:v.title}:null})})),
+src("Open Library",getJ("https://openlibrary.org/search.json?limit=8&fields=title,cover_i&q="+encodeURIComponent(q)).then(function(r){return(r.docs||[]).map(function(x){return x.cover_i?{u:"https://covers.openlibrary.org/b/id/"+x.cover_i+"-M.jpg",t:x.title}:null})})),
+src("Wikipedia",wiki(q,"livro"))]).then(flat)}
+return Promise.all([
+src("iTunes",itunes(q,k,"BR").then(function(a){return a.length?a:itunes(q,k,"US")})),
+src("Wikipedia",wiki(q,k==="f"?"filme":"série de televisão"))]).then(flat)}
 function pickCov(im,b){var bs=document.querySelectorAll(".cvb");for(var i=0;i<bs.length;i++)bs[i].setAttribute("aria-pressed","false");b.setAttribute("aria-pressed","true");
 var src=im.currentSrc||im.src;cover=src;$("cn").textContent="Capa escolhida ✓";
 var t=new Image();t.crossOrigin="anonymous";t.referrerPolicy="no-referrer";t.onload=function(){try{var s=Math.min(1,160/t.naturalHeight),c=document.createElement("canvas");c.width=Math.max(1,Math.round(t.naturalWidth*s));c.height=Math.max(1,Math.round(t.naturalHeight*s));c.getContext("2d").drawImage(t,0,0,c.width,c.height);cover=c.toDataURL("image/jpeg",0.7)}catch(e){}};t.src=src}
 function showCov(list){var box=$("cvR");box.hidden=false;
-if(!list.length){box.innerHTML='<p class="empty">Nenhuma capa encontrada. Use "Adicionar capa" para fotografar ou escolher da galeria.</p>';return}
+if(!list.length){box.innerHTML='<p class="empty">Nenhuma capa encontrada.'+(fe.length?" Falharam: "+fe.join(", ")+".":"")+' Use "Adicionar capa" para fotografar ou escolher da galeria.</p>';return}
 box.innerHTML="";list.forEach(function(x){var b=document.createElement("button");b.type="button";b.className="cvb";b.setAttribute("aria-label","Usar capa de "+(x.t||"resultado"));
 var im=new Image();im.referrerPolicy="no-referrer";im.alt="";im.src=x.u;if(x.o)im.onerror=function(){im.onerror=null;im.src=x.o};
 b.appendChild(im);b.onclick=function(){pickCov(im,b)};box.appendChild(b)})}
