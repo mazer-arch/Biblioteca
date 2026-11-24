@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Minha Biblioteca</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600&display=swap">
+<style>
+:root{--bg:#e8f0ee;--card:#fbfdfc;--ink:#2a2118;--mute:#6d6354;--teal:#3f9a9a;--teal-d:#2c7173;--line:#d3ddd9;--sky1:#d6ebe9;--sky2:#f1f6f4;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#10201f;--card:#182d2c;--ink:#f1e8d8;--mute:#a99f8d;--line:#294341;--sky1:#1d3d3b;--sky2:#142726}}
+:root[data-theme="dark"]{--bg:#10201f;--card:#182d2c;--ink:#f1e8d8;--mute:#a99f8d;--line:#294341;--sky1:#1d3d3b;--sky2:#142726}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Fredoka",system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.4}
+main{max-width:520px;margin:0 auto;padding:16px 14px 40px}
+h1{font-size:22px;margin:4px 0 2px;font-weight:600}
+.sub{color:var(--mute);margin:0 0 12px;font-size:15px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:12px}
+.stage{position:relative;aspect-ratio:1/1.05;border-radius:14px;overflow:hidden;background:linear-gradient(var(--sky1),var(--sky2))}
+canvas{display:block;width:100%;height:100%;touch-action:none;cursor:grab}
+.roofbtn{position:absolute;top:10px;right:10px;background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:12px;padding:8px 12px;font-size:14px}
+.hint{position:absolute;left:10px;bottom:10px;font-size:13px;color:var(--mute);background:var(--card);border-radius:10px;padding:4px 10px;transition:opacity .6s;pointer-events:none}
+.nogl{padding:30px 16px;text-align:center;color:var(--mute)}
+.prog{margin-top:12px}
+.bar{height:12px;border-radius:8px;background:var(--line);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--teal);border-radius:8px;transition:width .5s}
+.prog p{margin:6px 0 0;font-size:14px;color:var(--mute)}
+.add{margin-top:14px;display:grid;gap:8px}
+input{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:12px;width:100%}
+input:focus-visible,button:focus-visible{outline:3px solid var(--teal);outline-offset:2px}
+button{font:inherit;cursor:pointer}
+.btn{background:var(--teal-d);color:#fff;border:0;border-radius:12px;padding:12px;font-weight:500}
+.list{margin-top:14px}
+.list h2{font-size:17px;margin:0 0 6px}
+.row{display:flex;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--line)}
+.row:first-of-type{border-top:0}
+.dot{width:12px;height:30px;border-radius:3px;flex:none}
+.row div{flex:1;min-width:0}
+.row b{display:block;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.row small{color:var(--mute);display:block}
+.x{background:none;border:0;color:var(--mute);font-size:20px;padding:6px 10px}
+.empty{color:var(--mute);margin:6px 0}
+.tabs{display:flex;gap:6px;margin-bottom:12px}
+.tabs button{flex:1;padding:10px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--ink);font-weight:500}
+.tabs button[aria-selected="true"],.seg button[aria-pressed="true"],.pb button[aria-pressed="true"]{background:var(--teal-d);color:#fff;border-color:var(--teal-d)}
+.seg{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.seg button,.pb button{padding:10px;border-radius:12px;border:1px solid var(--line);background:var(--bg);color:var(--ink);font-size:14px;min-width:44px}
+.prev{margin-top:12px}
+.pb{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.pcap{margin:8px 0 0;font-size:14px;color:var(--mute)}
+.row .acts{flex:none;display:flex;align-items:center;gap:4px}
+.mini{background:none;border:1px solid var(--line);color:var(--teal-d);border-radius:10px;padding:6px 8px;font-size:13px}
+.cv{width:30px;height:42px;object-fit:cover;border-radius:4px;flex:none;border:1px solid var(--line)}
+.st{color:#d9a441;letter-spacing:1px}
+.fields{display:grid;grid-template-columns:1fr 1fr;gap:8px;align-items:stretch}
+.pick{display:flex;align-items:center;justify-content:center;background:var(--bg);border:1px dashed var(--line);border-radius:12px;padding:10px;color:var(--mute);cursor:pointer;font-size:15px;text-align:center;position:relative}
+.pick input{position:absolute;opacity:0;width:1px;height:1px}
+.pick:focus-within{outline:3px solid var(--teal);outline-offset:2px}
+.stars{display:flex;align-items:center;justify-content:space-between;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:2px 10px}
+.stars span{font-size:14px;color:var(--mute)}
+.stars button{background:none;border:0;font-size:26px;color:#d9a441;padding:6px 4px;line-height:1}
+#toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translate(-50%,30px);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:14px;opacity:0;transition:.3s;pointer-events:none;max-width:90%;text-align:center;z-index:5}
+#toast.on{opacity:1;transform:translate(-50%,0)}
+[hidden]{display:none!important}.ser{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:6px;color:var(--mute);font-size:14px}.ser input{width:58px;padding:6px 8px;text-align:center}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<main>
+<h1>Minha Biblioteca</h1>
+<div class="tabs" id="top" role="tablist" aria-label="Coleção"><button data-c="f" role="tab">Filmes</button><button data-c="s" role="tab">Séries</button><button data-c="l" role="tab">Livros</button></div>
+<p class="sub" id="lvlName"></p>
+<div class="tabs" role="tablist"><button id="tbL" role="tab" aria-selected="true">Biblioteca</button><button id="tbR" role="tab" aria-selected="false">Para ler</button></div>
+<div id="tabLidos">
+<div class="card"><div class="stage" id="stage"><button class="roofbtn" id="roofBtn">Ver telhado</button><div class="hint" id="hint">Arraste para girar · pince para ampliar</div></div></div>
+
+<div class="card prog"><div class="bar"><i id="fill"></i></div><p id="progTxt"></p></div>
+<div class="card add">
+<input id="t" placeholder="Título do livro" autocomplete="off">
+<input id="a" placeholder="Autor (opcional)" autocomplete="off">
+<div class="fields" id="sf" hidden><input id="ss" type="number" min="1" inputmode="numeric" placeholder="Temporada" aria-label="Temporada"><input id="se" type="number" min="0" inputmode="numeric" placeholder="Episódio" aria-label="Episódio"></div><div class="fields"><input id="d" type="date" aria-label="Data"><label class="pick"><input id="c" type="file" accept="image/*"><span id="cn">Adicionar capa</span></label></div>
+<div class="stars" id="stars" role="group" aria-label="Nota"><span>Nota</span><button type="button" data-s="1" aria-label="1 estrela">☆</button><button type="button" data-s="2" aria-label="2 estrelas">☆</button><button type="button" data-s="3" aria-label="3 estrelas">☆</button><button type="button" data-s="4" aria-label="4 estrelas">☆</button><button type="button" data-s="5" aria-label="5 estrelas">☆</button></div>
+<button class="btn" id="go">Adicionar à estante</button>
+</div>
+<div class="card list"><h2 id="hList">Livros lidos</h2><div id="list"></div></div>
+<div class="card list"><h2>Backup</h2><p class="pcap">Guarda filmes, séries e livros (com capas, notas e temporadas) e as listas “Para ler” em um arquivo, para restaurar em outro aparelho.</p><div class="fields" style="margin-top:8px"><button class="btn" id="bkOut" type="button">Exportar backup</button><label class="pick"><input id="bkIn" type="file" accept=".json,application/json"><span>Importar backup</span></label></div></div>
+</div>
+<div id="tabLer" hidden>
+<div class="card add">
+<input id="wt" placeholder="Título do livro" autocomplete="off">
+<input id="wa" placeholder="Autor (opcional)" autocomplete="off">
+<div class="seg" id="wseg"><button type="button" data-k="i" aria-pressed="true">Tenho interesse</button><button type="button" data-k="p" aria-pressed="false" id="wsP">Já tenho, não li</button></div>
+<button class="btn" id="wgo">Adicionar à lista</button>
+</div>
+<div class="card list"><h2 id="hwP">Já tenho, ainda não li</h2><div id="wlP"></div></div>
+<div class="card list"><h2>Tenho interesse</h2><div id="wlI"></div></div>
+</div>
+</main>
+<div id="toast" role="status"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(function(){
+var T=[0,5,15,30,50];
+var NAMES=["Cabana inicial","Cantinho de leitura","Sala aconchegante","Biblioteca ampliada","Grande biblioteca"];
+var W=[3.6,4.4,5.2,6,6.8],D=[3.2,3.8,4.4,5,5.6],ROWS=[2,2,3,3,4],SP=0.62;
+var PAL=["#c0504d","#3f7fb5","#d9a441","#5c8a4f","#8a5aa8","#d0743c","#2f8f83","#b94a73","#6b6f7a","#a3523a"];
+var KEY="biblioteca-livros-v1";
+var books=[];
+try{books=JSON.parse(localStorage.getItem(KEY)||"[]");if(!Array.isArray(books))books=[]}catch(e){books=[]}
+function save(){try{localStorage.setItem(C.key,JSON.stringify(books))}catch(e){}}
+function ld(k){try{var v=JSON.parse(localStorage.getItem(k)||"[]");return Array.isArray(v)?v:[]}catch(e){return[]}}
+var CF={l:{key:KEY,wk:"biblioteca-lista-v1",T:T,N:NAMES,gc:"#7fa66b",rc:["#3f9a9a","#2c7173"],one:"livro",many:"livros",tl:"Livros lidos",vi:"ler",v:"li",rd:"Li",ph:"Título do livro",pa:"Autor (opcional)",na:"Autor não informado"},
+f:{key:"biblioteca-filmes-v1",wk:"biblioteca-filmes-lista-v1",T:[0,10,30,60,100],N:["Telão improvisado","Sala de projeção","Home theater","Cinema particular","Grande cinema"],gc:"#6f6aa8",rc:["#8e2f45","#5e1a2b"],wc:["#5b3b57","#563552","#4e2f4b","#472a44","#3f243c"],lux:["Telão improvisado, projetor numa mesinha e poltronas simples.","Cortinas vermelhas, tapete e mais poltronas.","Pipoqueira, caixas de som e três fileiras de poltronas.","Moldura dourada na tela, luzes no corredor e quatro fileiras.","Letreiro iluminado, holofotes e cinco fileiras de poltronas."],one:"filme",many:"filmes",tl:"Filmes assistidos",vi:"ver",v:"vi",rd:"Vi",ph:"Título do filme",pa:"Diretor (opcional)",na:"Diretor não informado"},
+s:{key:"biblioteca-series-v1",wk:"biblioteca-series-lista-v1",T:[0,5,15,30,50],N:["Sofá inicial","Cantinho das séries","Sala de maratona","Sala de streaming","Grande maratona"],gc:"#a8786a",rc:["#6a5aa8","#463a7d"],wc:["#d9cfe6","#d3c6e3","#cabbe0","#c0b0dc","#b5a4d6"],lux:["Sofá, TV e estantes com mini TVs.","Tapete, mesinha e uma tigela de pipoca.","TV maior, almofadas e abajur de pé.","Sofá azul, fitas de LED roxas e TV gigante.","Letreiro no ar, pufes e TV enorme."],one:"série",many:"séries",tl:"Séries assistidas",vi:"ver",v:"vi",rd:"Vi",ph:"Título da série",pa:"Plataforma (opcional)",na:"Plataforma não informada"}};
+var col="l",C=CF.l,wish=ld(C.wk),ST={l:{b:books,w:wish},f:{b:ld(CF.f.key),w:ld(CF.f.wk)},s:{b:ld(CF.s.key),w:ld(CF.s.wk)}};
+function lvlOf(n){var l=0;for(var i=0;i<T.length;i++)if(n>=T[i])l=i;return l}
+function hash(s){var h=7;for(var i=0;i<s.length;i++)h=(h*31+s.charCodeAt(i))>>>0;return h}
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+function clamp(v,a,b){return Math.max(a,Math.min(b,v))}
+var $=function(id){return document.getElementById(id)};
+function toast(m){var t=$("toast");t.textContent=m;t.className="on";clearTimeout(toast.k);toast.k=setTimeout(function(){t.className=""},2600)}
+
+/* ---------- 3D ---------- */
+var stage=$("stage"),renderer,scene,camera,house,disp=[],walls=[],bookMeshes=[],roofG,roofOn=false;
+var az=0.7,pol=0.95,dist=10,dmin=4,dmax=20,auto=!window.matchMedia("(prefers-reduced-motion:reduce)").matches,tgt=new THREE.Vector3(0,1,0),curLvl=-1;
+var BOX=new THREE.BoxGeometry(1,1,1),matCache={};
+function tex(draw,rx,ry){var c=document.createElement("canvas");c.width=c.height=64;draw(c.getContext("2d"));var t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(rx,ry);disp.push(t);return t}
+function plank(ctx){ctx.fillStyle="#b9814a";ctx.fillRect(0,0,64,64);for(var i=0;i<4;i++){ctx.fillStyle="rgba(0,0,0,"+(0.04+0.05*(i%2))+")";ctx.fillRect(i*16,0,16,64);ctx.fillStyle="#8f5f30";ctx.fillRect(i*16,0,2,64)}}
+function floorTx(ctx){ctx.fillStyle="#8a5a2e";ctx.fillRect(0,0,64,64);for(var i=0;i<4;i++){ctx.fillStyle="rgba(255,255,255,"+(0.04*(i%2))+")";ctx.fillRect(0,i*16,64,16);ctx.fillStyle="#6b4322";ctx.fillRect(0,i*16,64,2)}}
+function shingle(ctx){ctx.fillStyle=C.rc[0];ctx.fillRect(0,0,64,64);ctx.strokeStyle=C.rc[1];ctx.lineWidth=3;for(var r=0;r<4;r++){ctx.beginPath();ctx.moveTo(0,r*16+15);ctx.lineTo(64,r*16+15);ctx.stroke();for(var c=0;c<4;c++){var o=(r%2)*8;ctx.beginPath();ctx.moveTo(c*16+o,r*16);ctx.lineTo(c*16+o,r*16+15);ctx.stroke()}}}
+function mat(o){var m=new THREE.MeshStandardMaterial(o);m.roughness=o.roughness===undefined?0.85:o.roughness;disp.push(m);return m}
+function bookMat(c){return matCache[c]||(matCache[c]=new THREE.MeshStandardMaterial({color:c,roughness:0.7}))}
+function box(w,h,d,m,x,y,z,p,cast){var o=new THREE.Mesh(BOX,m);o.scale.set(w,h,d);o.position.set(x,y,z);o.castShadow=!!cast;o.receiveShadow=true;p.add(o);return o}
+function cyl(rt,rb,h,m,x,y,z,p,seg){var g=new THREE.CylinderGeometry(rt,rb,h,seg||16);var o=new THREE.Mesh(g,m);o.position.set(x,y,z);o.castShadow=true;p.add(o);return o}
+function ball(r,m,x,y,z,p,sx,sy,sz){var o=new THREE.Mesh(new THREE.SphereGeometry(r,14,10),m);o.position.set(x,y,z);o.scale.set(sx||1,sy||1,sz||1);o.castShadow=true;p.add(o);return o}
+
+function initGL(){
+try{renderer=new THREE.WebGLRenderer({antialias:true,alpha:true});}catch(e){stage.innerHTML='<div class="nogl">Seu navegador não conseguiu abrir o 3D. Tente outro navegador.</div>';return false}
+renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));renderer.setClearColor(0x000000,0);
+renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+stage.insertBefore(renderer.domElement,stage.firstChild);
+scene=new THREE.Scene();camera=new THREE.PerspectiveCamera(40,1,0.1,100);
+scene.add(new THREE.HemisphereLight(0xfff3dd,0x6b8f8a,0.85));
+var sun=new THREE.DirectionalLight(0xfff0d0,0.9);sun.position.set(6,10,7);sun.castShadow=true;sun.shadow.mapSize.set(1024,1024);
+var s=sun.shadow.camera;s.left=-9;s.right=9;s.top=9;s.bottom=-9;s.near=1;s.far=30;scene.add(sun);
+function size(){var w=stage.clientWidth,h=stage.clientHeight;if(!w||!h)return;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix()}
+if(window.ResizeObserver)new ResizeObserver(size).observe(stage);else window.addEventListener("resize",size);size();
+return true}
+
+function build(l,lst){lst=lst||books;cur=lst;
+if(house){scene.remove(house);house.traverse(function(o){if(o.geometry&&o.geometry!==BOX)o.geometry.dispose()});disp.forEach(function(d){d.dispose()});disp.length=0}
+house=new THREE.Group();walls=[];bookMeshes=[];var FRM=mat({color:"#1d1a1f"}),STR=mat({color:"#f4f0e6"}),SCR=mat({color:"#9fe0e4",emissive:"#2a8f9a",emissiveIntensity:0.7});
+var w=W[l],d=D[l],rows=ROWS[l],H=0.3+rows*SP+0.1;
+var woodO=function(rx,ry){return mat({map:tex(plank,rx,ry)})};
+/* ground + floor */
+cyl(Math.max(w,d)*1.5,Math.max(w,d)*1.5,0.2,mat({color:C.gc}),0,-0.22,0,house,40).receiveShadow=true;
+var fl=mat({map:tex(floorTx,(w+0.24)/1.2,(d+0.24)/1.2)}),fs=mat({color:"#6b4322"});
+box(w+0.24,0.12,d+0.24,[fs,fs,fl,fs,fs,fs],0,-0.06,0,house);
+/* walls with shelves and books */
+var defs=[{x:0,z:-d/2,r:0,len:w+0.24,nx:0,nz:-1},{x:w/2,z:0,r:-Math.PI/2,len:d,nx:1,nz:0},{x:0,z:d/2,r:Math.PI,len:w+0.24,nx:0,nz:1},{x:-w/2,z:0,r:Math.PI/2,len:d,nx:-1,nz:0}];
+var shelfM=mat({color:["#8a5a2e","#8a5a2e","#7d4f27","#6a3f1f","#5a3219"][l]}),inner=mat({color:"#e3c590"}),curs=[];
+defs.forEach(function(df,k){
+var g=new THREE.Group();g.position.set(df.x,0,df.z);g.rotation.y=df.r;house.add(g);
+var side=woodO(1,1),top=woodO(1,1),outer=woodO(df.len/1.1,H/1.1);
+var ms=[side,side,top,side,mat({color:(C.wc||["#e3c590","#e6c98f","#dcb98b","#cfa67a","#c29668"])[l]}),outer];ms.forEach(function(m){m.transparent=true});
+var bx=box(df.len,H,0.12,ms,0,H/2,-0.06,g,true);
+var stuff=new THREE.Group();g.add(stuff);
+var inl=df.len-(k%2===0?0.24:0)-0.04;
+if(col!=="f")for(var r=0;r<rows;r++)box(inl,0.05,0.34,shelfM,0,0.3+r*SP,0.17,stuff);
+walls.push({g:g,ms:ms,stuff:stuff,nx:df.nx,nz:df.nz,len:inl,op:1});
+curs.push(new Array(rows).fill(-inl/2+0.1))});
+for(var i=0;i<lst.length;i++){
+var k=col==="f"?1+i%3:i%4,wl=walls[k],h=hash(lst[i].t+i),bw=0.08+(h%9)/100,bh=0.36+((h>>4)%17)/100,bd=0.26+((h>>9)%5)/100,placed=false;if(col==="f"){bw=0.4;bh=0.5;bd=0.02}else if(col==="s"){bw=0.22+(h%5)/50;bh=0.2+((h>>4)%4)/50;bd=0.22}
+for(var r2=0;r2<rows&&!placed;r2++){
+if(curs[k][r2]+bw<=wl.len/2-0.1){
+var m=new THREE.Mesh(BOX,bookMat(PAL[h%PAL.length]));m.scale.set(bw,bh,bd);
+m.position.set(curs[k][r2]+bw/2,0.3+r2*SP+0.025+bh/2,0.04+bd/2);m.userData.i=i;if(col==="f"){m.scale.set(0.34,0.5,0.02);m.position.set(curs[k][r2]+0.2,0.3+r2*SP+0.35,0.05);var fm=new THREE.Mesh(BOX,FRM);fm.scale.set(0.38,0.56,0.012);fm.position.set(m.position.x,m.position.y,0.03);wl.stuff.add(fm);var sp2=new THREE.Mesh(BOX,STR);sp2.scale.set(0.26,0.05,0.022);sp2.position.set(m.position.x,m.position.y-0.18,0.052);wl.stuff.add(sp2)}else if(col==="s"){var sc=new THREE.Mesh(BOX,SCR);sc.scale.set(bw*0.72,bh*0.68,0.012);sc.position.set(curs[k][r2]+bw/2-0.01,0.3+r2*SP+0.03+bh/2,0.04+bd+0.004);wl.stuff.add(sc)}
+wl.stuff.add(m);bookMeshes.push(m);curs[k][r2]+=bw+0.012;placed=true}}}
+/* roof */
+roofG=new THREE.Group();house.add(roofG);
+var rh=d*0.34,oh=0.35,half=d/2+oh,drop=oh*rh/(d/2),A=Math.atan2(rh+drop,half),sl=Math.hypot(half,rh+drop);
+var rm=mat({map:tex(shingle,(w+0.8)/1.1,sl/1.1)});
+[1,-1].forEach(function(sg){var b=box(w+0.8,0.1,sl,rm,0,H+(rh-drop)/2,sg*half/2,roofG,true);b.rotation.x=sg*A});
+var gw=mat({map:tex(plank,0.8,0.8)});gw.side=THREE.DoubleSide;
+var shp=new THREE.Shape();shp.moveTo(-d/2,0);shp.lineTo(d/2,0);shp.lineTo(0,rh);
+[1,-1].forEach(function(sg){var o=new THREE.Mesh(new THREE.ShapeGeometry(shp),gw);o.rotation.y=Math.PI/2;o.position.set(sg*(w/2+0.1),H,0);roofG.add(o)});
+ball(0.09,mat({color:"#d9a441"}),0,H+rh+0.12,0,roofG);
+roofG.visible=roofOn;
+/* outside props */
+box(0.8,1.2,0.05,mat({color:"#6b4322"}),0,0.6,d/2+0.15,house,true);
+ball(0.05,mat({color:"#d9a441"}),0.28,0.6,d/2+0.2,house);
+var post=mat({color:"#7a4e28"});
+cyl(0.04,0.04,1.6,post,w/2+0.6,0.8,d/2+0.3,house,8);
+box(0.3,0.04,0.04,post,w/2+0.45,1.58,d/2+0.3,house);
+ball(0.1,mat({color:"#f2c14e",emissive:"#f2a21e",emissiveIntensity:0.8}),w/2+0.3,1.48,d/2+0.3,house);
+if(col==="l")box(0.5,0.4,0.5,mat({color:"#c8924f"}),-w/2-0.6,0.2,d/2+0.5,house,true);
+var hay=mat({color:"#e5c46b"});
+if(col==="l"){ball(0.28,hay,-w/2-0.55,0.33,d/2+0.95,house,1,1.2,1);ball(0.26,hay,-w/2-1.05,0.3,d/2+0.7,house,1,1.2,1)}
+/* inside props */
+var teal=mat({color:"#3f9a9a"});if(col==="l"){
+if(l>=1){cyl(0.9,0.9,0.02,teal,0,0.011,0,house,32);cyl(0.62,0.62,0.02,mat({color:"#8fd0d3"}),0,0.022,0,house,32);
+cyl(0.14,0.11,0.24,mat({color:"#a3523a"}),w/2-0.7,0.12,d/2-0.7,house,12);ball(0.26,mat({color:"#5c8a4f"}),w/2-0.7,0.42,d/2-0.7,house)}
+if(l>=2){var cm=mat({color:"#d0743c"});box(0.6,0.3,0.6,cm,-w/2+0.9,0.15,d/2-0.9,house,true);box(0.6,0.5,0.14,cm,-w/2+0.9,0.45,d/2-1.15,house,true)}
+if(l>=3){var lp=mat({color:"#7a4e28"});cyl(0.03,0.03,1.3,lp,-w/2+0.7,0.65,-d/2+0.7,house,8);
+ball(0.16,mat({color:"#f2c14e",emissive:"#f2a21e",emissiveIntensity:0.7}),-w/2+0.7,1.3,-d/2+0.7,house);
+box(0.05,1.6,0.05,lp,-w/2-0.35,0.8,-0.4,house);box(0.05,1.6,0.05,lp,-w/2-0.35,0.8,0.4,house);
+for(var q=0;q<5;q++)box(0.05,0.04,0.8,lp,-w/2-0.35,0.2+q*0.32,0,house)}
+if(l>=4){cyl(0.05,0.1,0.5,post,w/2-0.9,0.25,-d/2+0.9,house,10);ball(0.2,mat({color:"#3f7fb5"}),w/2-0.9,0.7,-d/2+0.9,house)}
+}
+(col==="f"?cinema:col==="s"?lounge:luxury)(l,w,d,H,house);
+scene.add(house);
+var mx=Math.max(w,d);dmin=mx*1.1;dmax=mx*4;tgt.set(0,H*0.45,0);
+if(curLvl!==l){dist=mx*2.4+1.2;curLvl=l}}
+
+var LUX=["Estantes simples, porta e lanterna.","Pufe, tapete, planta e canteiros de flores.","Poltrona, mesa de centro, banco, arbustos e árvore.","Poltrona de veludo, abajur, escada, fonte e acabamento dourado.","Piso de mármore, chaise, pórtico dourado, estátua, sebes e arco de rosas."];
+function luxury(l,w,d,H,g){
+var i,fz=d/2,WD=mat({color:"#7a4e28"}),GD=mat({color:"#d9a441",roughness:0.35}),GR=mat({color:"#3f7a46"}),ST=mat({color:"#c9c2b4"}),FL=["#e86a8a","#f2c14e","#f4f0e6","#b07ad0"].map(function(c){return mat({color:c})});
+var warm=new THREE.PointLight(0xffd9a0,0.25+0.18*l,9);warm.position.set(0,H-0.3,0);g.add(warm);
+if(l>=1){
+cyl(0.2,0.2,0.22,mat({color:"#c0504d"}),0.9,0.11,0.7,g,16);
+for(i=0;i<(l>=3?5:3);i++)cyl(0.22,0.22,0.04,ST,0,0.02,fz+0.6+i*0.55,g,10);
+[-1,1].forEach(function(s){box(0.9,0.22,0.3,WD,s*0.9,0.11,fz+0.38,g,true);for(var j=0;j<4;j++)ball(0.09,FL[j],s*0.9-0.33+j*0.22,0.3,fz+0.38,g)})}
+if(l>=2){
+box(0.7,0.04,0.45,WD,0,0.3,0,g,true);
+[[-0.3,-0.18],[0.3,-0.18],[-0.3,0.18],[0.3,0.18]].forEach(function(p){box(0.04,0.28,0.04,WD,p[0],0.14,p[1],g)});
+box(0.3,0.05,0.2,mat({color:"#c0504d"}),0.1,0.345,0,g);box(0.26,0.04,0.18,mat({color:"#3f7fb5"}),0.1,0.39,0.02,g);
+cyl(0.05,0.04,0.08,mat({color:"#f4f0e6"}),-0.2,0.36,0.05,g,12);
+box(1.0,0.06,0.35,WD,1.95,0.38,fz+0.35,g,true);box(1.0,0.3,0.05,WD,1.95,0.6,fz+0.2,g,true);box(0.06,0.38,0.3,WD,1.55,0.19,fz+0.35,g);box(0.06,0.38,0.3,WD,2.35,0.19,fz+0.35,g);
+ball(0.3,GR,w/2+0.05,0.28,fz+0.2,g,1,0.9,1);ball(0.3,GR,-w/2-0.05,0.28,fz+0.2,g,1,0.9,1);
+cyl(0.1,0.13,0.9,mat({color:"#6b4322"}),w/2+1.0,0.45,-d/4,g,8);ball(0.75,GR,w/2+1.0,1.45,-d/4,g);ball(0.5,GR,w/2+1.0,2.0,-d/4,g)}
+if(l>=3){
+var vm=mat({color:"#8e2f45",roughness:0.6});
+box(0.6,0.3,0.6,vm,2.0,0.15,0.2,g,true);box(0.14,0.5,0.6,vm,2.25,0.45,0.2,g,true);
+cyl(0.22,0.22,0.04,WD,2.0,0.45,-0.55,g,16);cyl(0.03,0.03,0.45,WD,2.0,0.225,-0.55,g,8);
+cyl(0.12,0.18,0.18,mat({color:"#f2c14e",emissive:"#f2a21e",emissiveIntensity:0.6}),2.0,0.6,-0.55,g,14);
+box(w+0.34,0.05,0.16,GD,0,H+0.02,fz+0.06,g);box(w+0.34,0.05,0.16,GD,0,H+0.02,-fz-0.06,g);box(0.16,0.05,d+0.34,GD,w/2+0.06,H+0.02,0,g);box(0.16,0.05,d+0.34,GD,-w/2-0.06,H+0.02,0,g);
+cyl(0.7,0.7,0.2,ST,-2.0,0.1,fz+2.2,g,24);cyl(0.58,0.58,0.02,mat({color:"#6fb7d6",emissive:"#2a6f8f",emissiveIntensity:0.3}),-2.0,0.2,fz+2.2,g,24);
+cyl(0.07,0.1,0.55,ST,-2.0,0.45,fz+2.2,g,10);ball(0.13,mat({color:"#a9dcef"}),-2.0,0.78,fz+2.2,g)}
+if(l>=4){
+var MB=mat({color:"#efe9dc",roughness:0.3}),tv=mat({color:"#2f7a7c",roughness:0.6}),rs=mat({color:"#d23b5c"});
+box(w-0.9,0.01,d-0.9,GD,0,0.005,0,g);box(w-1.1,0.014,d-1.1,MB,0,0.007,0,g);
+box(1.3,0.3,0.55,tv,-0.2,0.15,-d/2+1.2,g,true);box(1.3,0.5,0.12,tv,-0.2,0.4,-d/2+0.97,g,true);box(0.3,0.12,0.2,GD,0.2,0.36,-d/2+1.2,g);
+cyl(0.05,0.05,1.3,GD,-0.5,0.65,fz+0.2,g,10);cyl(0.05,0.05,1.3,GD,0.5,0.65,fz+0.2,g,10);box(1.2,0.08,0.1,GD,0,1.34,fz+0.2,g);
+box(0.4,0.5,0.4,ST,2.2,0.25,fz+2.2,g,true);cyl(0.12,0.16,0.5,ST,2.2,0.75,fz+2.2,g,10);ball(0.13,ST,2.2,1.1,fz+2.2,g);
+[-1,1].forEach(function(s){for(var j=0;j<3;j++)box(0.4,0.5,1.0,GR,s*(w/2+1.4),0.25,fz+0.9+j*1.1,g,true)});
+cyl(0.05,0.05,1.0,WD,-0.7,0.5,fz+1.9,g,8);cyl(0.05,0.05,1.0,WD,0.7,0.5,fz+1.9,g,8);
+var ar=new THREE.Mesh(new THREE.TorusGeometry(0.7,0.05,8,20,Math.PI),WD);ar.position.set(0,1.0,fz+1.9);g.add(ar);
+for(i=0;i<6;i++)ball(0.07,rs,0.7*Math.cos(Math.PI*i/5),1.0+0.7*Math.sin(Math.PI*i/5),fz+1.9,g)}}
+function cinema(l,w,d,H,g){
+var RD=mat({color:"#9b2d3a",roughness:0.6}),DK=mat({color:"#2a2630"}),GD=mat({color:"#d9a441",roughness:0.35}),GL=mat({color:"#f2c14e",emissive:"#f2a21e",emissiveIntensity:0.9}),WH=mat({color:"#f4f0e6",emissive:"#cfd9e8",emissiveIntensity:0.5}),i,j;
+var st=walls[0].stuff,sw=Math.min(w-0.9,[2.2,2.4,3,3.4,4.2][l]),sh=[0.9,1,1.4,1.5,1.9][l],n=[2,4,4,6,6][l],R=[1,2,3,4,5][l],z0=-d/2+1.5;
+if(l>=3)box(sw+0.2,sh+0.2,0.04,GD,0,0.35+sh/2,0.06,st);
+box(sw,sh,0.04,WH,0,0.35+sh/2,0.09,st);
+if(l>=1)[-1,1].forEach(function(s){box(0.3,H-0.15,0.1,RD,s*(sw/2+0.28),(H-0.15)/2,0.1,st)});
+for(i=0;i<R;i++){for(j=0;j<n;j++){var x=(j-(n-1)/2)*0.5+(j<n/2?-0.2:0.2),z=z0+i*0.75;box(0.4,0.25,0.4,RD,x,0.125,z,g,true);box(0.4,0.4,0.08,RD,x,0.45,z+0.2,g,true)}
+if(l>=3)[-1,1].forEach(function(s){ball(0.04,GL,s*0.22,0.05,z0+i*0.75,g)})}
+if(l>=1)box(0.4,0.012,d-0.7,RD,0,0.006,0.35,g);
+var zp=Math.min(z0+(R-1)*0.75+0.9,d/2-0.35);box(0.5,0.4,0.5,DK,0,0.2,zp,g,true);box(0.3,0.16,0.26,DK,0,0.48,zp,g);cyl(0.06,0.06,0.1,GL,0,0.5,zp-0.2,g,10).rotation.x=Math.PI/2;
+if(l>=2){var px=-w/2+0.55,pz=d/2-0.6;box(0.5,0.7,0.5,RD,px,0.35,pz,g,true);box(0.46,0.4,0.46,mat({color:"#dff3f5",transparent:true,opacity:0.35}),px,0.9,pz,g);for(i=0;i<4;i++)ball(0.1,mat({color:"#f6e7a8"}),px-0.1+(i%2)*0.2,1.0+(i>>1)*0.1,pz-0.05+(i%2)*0.1,g);
+[-1,1].forEach(function(s){box(0.3,0.8,0.3,DK,s*(w/2-0.35),0.4,-d/2+0.45,g,true);ball(0.09,GD,s*(w/2-0.35),0.55,-d/2+0.62,g)})}
+if(l>=4){box(1.6,0.34,0.14,GD,0,1.75,d/2+0.3,g);for(i=0;i<7;i++)ball(0.05,GL,-0.66+i*0.22,1.95,d/2+0.38,g);[-1,1].forEach(function(s){cyl(0.04,0.04,1.1,DK,s*1.1,0.55,d/2+0.5,g,8);ball(0.11,GL,s*1.1,1.15,d/2+0.5,g)})}
+var pl=new THREE.PointLight(0xffb870,0.3+0.1*l,9);pl.position.set(0,H-0.4,0.3);g.add(pl)}
+function lounge(l,w,d,H,g){
+var SF=mat({color:["#6a5aa8","#6a5aa8","#8e4f7a","#3f5f8f","#8e2f45"][l],roughness:0.7}),DK=mat({color:"#24222b"}),WD=mat({color:"#7a4e28"}),GL=mat({color:"#9fe0e4",emissive:"#2a8f9a",emissiveIntensity:0.8}),PK=mat({color:"#f2c14e",emissive:"#f2a21e",emissiveIntensity:0.8});
+var tw=[0.9,1,1.3,1.6,2][l],th=tw*0.58,sf=[1.3,1.5,1.7,2.1,2.5][l],z=d/2-1.2,tz=-d/2+0.75;
+box(tw+0.3,0.3,0.4,WD,0,0.15,tz,g,true);box(tw,th,0.08,DK,0,0.3+th/2,tz,g,true);box(tw-0.1,th-0.1,0.02,GL,0,0.3+th/2,tz+0.05,g);
+box(sf,0.28,0.7,SF,0,0.14,z,g,true);box(sf,0.5,0.14,SF,0,0.5,z+0.33,g,true);[-1,1].forEach(function(s){box(0.14,0.4,0.7,SF,s*(sf/2+0.07),0.2,z,g,true)});
+if(l>=1){cyl(1.2+0.1*l,1.2+0.1*l,0.02,mat({color:"#3f9a9a"}),0,0.011,(tz+z)/2,g,32);box(0.7,0.26,0.4,WD,0,0.13,z-0.9,g,true);cyl(0.12,0.09,0.12,mat({color:"#c0504d"}),0.15,0.32,z-0.9,g,14);ball(0.13,mat({color:"#f6e7a8"}),0.15,0.42,z-0.9,g)}
+if(l>=2){[-1,1].forEach(function(s){box(0.28,0.28,0.1,mat({color:s>0?"#f2c14e":"#d0743c"}),s*(sf/2-0.35),0.5,z+0.22,g)});cyl(0.03,0.03,1.3,WD,-sf/2-0.5,0.65,z,g,8);ball(0.16,PK,-sf/2-0.5,1.3,z,g)}
+if(l>=3){var LED=mat({color:"#b07ad0",emissive:"#8a4fd0",emissiveIntensity:0.9});box(w,0.04,0.04,LED,0,H-0.05,-d/2+0.05,g);box(w,0.04,0.04,LED,0,H-0.05,d/2-0.05,g)}
+if(l>=4){box(0.8,0.3,0.05,mat({color:"#d23b5c",emissive:"#d23b5c",emissiveIntensity:0.9}),0,1.9,d/2+0.2,g);[-1,1].forEach(function(s){ball(0.35,SF,s*(sf/2+1.0),0.3,z,g,1,0.7,1)})}
+var pl=new THREE.PointLight(0xffd9a0,0.3+0.1*l,9);pl.position.set(0,H-0.4,0.3);g.add(pl)}
+var ray=new THREE.Raycaster(),ndc=new THREE.Vector2();
+function pick(e){var r=renderer.domElement.getBoundingClientRect();ndc.set((e.clientX-r.left)/r.width*2-1,-((e.clientY-r.top)/r.height)*2+1);
+ray.setFromCamera(ndc,camera);var hits=ray.intersectObjects(bookMeshes);
+for(var i=0;i<hits.length;i++){var o=hits[i].object;if(o.parent&&o.parent.visible){var b=cur[o.userData.i];if(b)toast(b.t+(b.a?" — "+b.a:"")+(b.r?"  "+starTxt(b.r):"")+(b.w?" · "+fmt(b.w):""));return}}}
+
+function bindInput(){
+var cv=renderer.domElement,ptrs={},n=0,moved=0,pd=0;
+function pdist(){var k=Object.keys(ptrs);return Math.hypot(ptrs[k[0]].x-ptrs[k[1]].x,ptrs[k[0]].y-ptrs[k[1]].y)||1}
+cv.addEventListener("pointerdown",function(e){cv.setPointerCapture(e.pointerId);ptrs[e.pointerId]={x:e.clientX,y:e.clientY};n++;moved=0;auto=false;$("hint").style.opacity=0;if(n===2)pd=pdist()});
+cv.addEventListener("pointermove",function(e){var p=ptrs[e.pointerId];if(!p)return;var dx=e.clientX-p.x,dy=e.clientY-p.y;p.x=e.clientX;p.y=e.clientY;moved+=Math.abs(dx)+Math.abs(dy);
+if(n===1){az-=dx*0.008;pol=clamp(pol-dy*0.006,0.2,1.45)}else if(n===2){var dd=pdist();dist=clamp(dist*pd/dd,dmin,dmax);pd=dd}});
+function up(e){if(!ptrs[e.pointerId])return;if(n===1&&moved<6&&e.type==="pointerup")pick(e);delete ptrs[e.pointerId];n=Math.max(0,n-1)}
+cv.addEventListener("pointerup",up);cv.addEventListener("pointercancel",up);
+cv.addEventListener("wheel",function(e){e.preventDefault();auto=false;dist=clamp(dist*(1+e.deltaY*0.001),dmin,dmax)},{passive:false})}
+
+function tick(){
+if(auto)az+=0.003;
+var sp=Math.sin(pol);
+camera.position.set(tgt.x+dist*sp*Math.sin(az),tgt.y+dist*Math.cos(pol),tgt.z+dist*sp*Math.cos(az));camera.lookAt(tgt);
+var cx=Math.sin(az),cz=Math.cos(az);
+walls.forEach(function(w){var face=!roofOn&&(w.nx*cx+w.nz*cz)*sp>0.22;w.stuff.visible=!face;
+w.op+=((face?0.12:1)-w.op)*0.2;w.ms.forEach(function(m){m.opacity=w.op})});
+renderer.render(scene,camera)}
+
+$("roofBtn").addEventListener("click",function(){roofOn=!roofOn;if(roofG)roofG.visible=roofOn;this.textContent=roofOn?"Ver por dentro":"Ver telhado";auto=false});
+
+/* ---------- UI ---------- */
+function render(){
+var n=books.length,l=lvlOf(n);
+$("lvlName").textContent=NAMES[l]+" · nível "+(l+1)+" de "+T.length;
+var f=$("fill"),pt=$("progTxt");
+if(l<T.length-1){var a=T[l],b=T[l+1];f.style.width=((n-a)/(b-a)*100)+"%";
+pt.textContent=n+" "+(n===1?C.one:C.many)+" na estante · nível "+(l+1)+" de "+T.length+". Faltam "+(b-n)+" para “"+NAMES[l+1]+"”."}
+else{f.style.width="100%";pt.textContent=n+" "+C.many+". Sua biblioteca está completa!"}
+var ls=$("list");
+if(!n){ls.innerHTML='<p class="empty">Nada por aqui ainda. Adicione o primeiro acima e veja as estantes ganharem vida.</p>'}
+else{var h="";for(var i=n-1;i>=0;i--){var b2=books[i],c=PAL[hash(b2.t+i)%PAL.length];
+h+='<div class="row">'+(b2.c?'<img class="cv" alt="" src="'+esc(b2.c)+'">':'<span class="dot" style="background:'+c+'"></span>')+'<div><b>'+esc(b2.t)+'</b><small>'+esc(b2.a||C.na)+'</small>'+((b2.r||b2.w)?'<small>'+(b2.r?'<span class="st">'+starTxt(b2.r)+'</span> ':'')+fmt(b2.w)+'</small>':'')+(col==="s"?serCtl(b2,i):'')+'</div><button class="x" data-del="'+i+'" aria-label="Remover '+esc(b2.t)+'">×</button></div>'}
+ls.innerHTML=h}
+if(renderer){prev=-1;paintPrev();build(l)}}
+
+var cur=books,prev=-1,wk="i";
+
+function saveW(){try{localStorage.setItem(C.wk,JSON.stringify(wish))}catch(e){}}
+function serCtl(b,i){return '<span class="ser">T <input type="number" min="1" inputmode="numeric" data-ts="'+i+'" value="'+(+b.s||1)+'" aria-label="Temporada"> E <input type="number" min="0" inputmode="numeric" data-te="'+i+'" value="'+(+b.e||0)+'" aria-label="Episódio"><button type="button" class="mini" data-ep="'+i+'">+1 ep.</button><button type="button" class="mini" data-ns="'+i+'">Nova temp.</button></span>'+(b.u?'<small>Marcado em '+fmt(b.u)+'</small>':'')}
+function setCol(k){col=k;C=CF[k];T=C.T;NAMES=C.N;books=ST[k].b;wish=ST[k].w;cur=books;prev=-1;curLvl=-1;
+try{localStorage.setItem("biblioteca-aba",k)}catch(e){}
+var b=document.querySelectorAll("#top button");for(var i=0;i<b.length;i++)b[i].setAttribute("aria-selected",b[i].getAttribute("data-c")===k?"true":"false");
+$("hList").textContent=C.tl;$("tbR").textContent="Para "+C.vi;$("t").placeholder=C.ph;$("wt").placeholder=C.ph;$("a").placeholder=C.pa;$("wa").placeholder=C.pa;
+$("hwP").textContent="Já tenho, ainda não "+C.v;$("wsP").textContent="Já tenho, não "+C.v;$("sf").hidden=k!=="s";
+tab("l");resetExtra();render();renderW()}
+function demo(p){var a=[],n=p?T[p]+Math.floor(((T[p+1]||T[p]+20)-T[p])*0.4):3;for(var i=0;i<n;i++)a.push({t:"Exemplo "+(i+1),a:""});return a}
+function paintPrev(){return;var b=document.querySelectorAll("#pb button[data-p]");for(var i=0;i<b.length;i++)b[i].setAttribute("aria-pressed",+b[i].getAttribute("data-p")===prev?"true":"false");
+$("pcap").textContent=prev<0?"Marcos: "+T.slice(1,-1).join(", ")+" e "+T[T.length-1]+" "+C.many+". A última evolução é aos "+T[T.length-1]+".":"Prévia do nível "+(prev+1)+": "+NAMES[prev]+" ("+(T[prev]?"a partir de "+T[prev]+" "+C.many:"ponto de partida")+"). "+(C.lux||LUX)[prev]}
+function tab(n){$("tabLidos").hidden=n!=="l";$("tabLer").hidden=n!=="r";$("tbL").setAttribute("aria-selected",n==="l"?"true":"false");$("tbR").setAttribute("aria-selected",n==="r"?"true":"false")}
+function segPaint(){var b=document.querySelectorAll("#wseg button");for(var i=0;i<b.length;i++)b[i].setAttribute("aria-pressed",b[i].getAttribute("data-k")===wk?"true":"false")}
+function renderW(){["p","i"].forEach(function(k){var h="",c=0;for(var i=wish.length-1;i>=0;i--){var x=wish[i];if(x.k!==k)continue;c++;
+h+='<div class="row"><div><b>'+esc(x.t)+'</b><small>'+esc(x.a||C.na)+'</small></div><div class="acts">'+(k==="i"?'<button class="mini" data-mv="'+i+'">Já tenho</button>':'')+'<button class="mini" data-rd="'+i+'">'+C.rd+'</button><button class="x" data-wd="'+i+'" aria-label="Remover '+esc(x.t)+'">×</button></div></div>'}
+$(k==="p"?"wlP":"wlI").innerHTML=c?h:'<p class="empty">'+(k==="p"?"Nada aqui. Os que você já tem e ainda não "+C.v+" ficam nesta lista.":"Nada aqui. Anote o que você quer "+C.vi+".")+'</p>'})}
+function markRead(i){var x=wish[i];if(!x)return;var before=lvlOf(books.length);books.push({t:x.t,a:x.a,d:Date.now(),r:0,w:today(),c:"",s:1,e:0});save();wish.splice(i,1);saveW();render();renderW();var after=lvlOf(books.length);toast(after>before?"A casa evoluiu: "+NAMES[after]+"!":"“"+x.t+"” foi para a estante.")}
+var rating=0,cover="";
+function today(){var d=new Date();return d.getFullYear()+"-"+("0"+(d.getMonth()+1)).slice(-2)+"-"+("0"+d.getDate()).slice(-2)}
+function fmt(s){if(!s)return"";var p=String(s).split("-");return p.length===3?p[2]+"/"+p[1]+"/"+p[0]:""}
+function starTxt(r){return r?"★★★★★".slice(0,r)+"☆☆☆☆☆".slice(0,5-r):""}
+function paintStars(){var b=document.querySelectorAll("#stars button");for(var i=0;i<b.length;i++){b[i].textContent=i<rating?"★":"☆";b[i].setAttribute("aria-pressed",i<rating?"true":"false")}}
+function resetExtra(){rating=0;cover="";$("d").value=today();$("c").value="";$("ss").value="";$("se").value="";$("cn").textContent="Adicionar capa";paintStars()}
+function add(){
+var t=$("t").value.trim(),a=$("a").value.trim();
+if(!t){toast("Digite o título do livro.");$("t").focus();return}
+var before=lvlOf(books.length);
+var o={t:t,a:a,d:Date.now(),r:rating,w:$("d").value||today(),c:cover};if(col==="s"){o.s=Math.max(1,Math.floor(+$("ss").value)||1);o.e=Math.max(0,Math.floor(+$("se").value)||0);o.u=today()}books.push(o);save();
+$("t").value="";$("a").value="";resetExtra();
+render();
+var after=lvlOf(books.length);
+toast(after>before?"A casa evoluiu: "+NAMES[after]+"!":"“"+t+"” entrou na estante.")}
+
+$("go").addEventListener("click",add);
+$("top").addEventListener("click",function(e){var k=e.target.getAttribute("data-c");if(k&&k!==col)setCol(k)});
+$("list").addEventListener("click",function(e){var t=e.target,i,b;
+if((i=t.getAttribute("data-ep"))!==null&&(b=books[+i])){b.e=(+b.e||0)+1;b.u=today();save();render();toast(b.t+": T"+(+b.s||1)+" E"+b.e)}
+else if((i=t.getAttribute("data-ns"))!==null&&(b=books[+i])){b.s=(+b.s||1)+1;b.e=1;b.u=today();save();render();toast(b.t+": temporada "+b.s+" iniciada.")}});
+$("list").addEventListener("change",function(e){var t=e.target,i,b;
+if((i=t.getAttribute("data-ts"))!==null&&(b=books[+i]))b.s=Math.max(1,Math.floor(+t.value)||1);
+else if((i=t.getAttribute("data-te"))!==null&&(b=books[+i]))b.e=Math.max(0,Math.floor(+t.value)||0);else return;
+b.u=today();save();render()});
+$("tbL").addEventListener("click",function(){tab("l")});$("tbR").addEventListener("click",function(){tab("r")});
+
+$("wgo").addEventListener("click",function(){var t=$("wt").value.trim();if(!t){toast("Digite o título do livro.");$("wt").focus();return}wish.push({t:t,a:$("wa").value.trim(),k:wk});saveW();$("wt").value="";$("wa").value="";renderW();toast("“"+t+"” entrou na lista.")});
+$("tabLer").addEventListener("click",function(e){var t=e.target,a;
+if((a=t.getAttribute("data-mv"))!==null){wish[+a].k="p";saveW();renderW()}
+else if((a=t.getAttribute("data-rd"))!==null){markRead(+a)}
+else if((a=t.getAttribute("data-wd"))!==null){var x=wish[+a];if(x&&confirm("Remover “"+x.t+"” da lista?")){wish.splice(+a,1);saveW();renderW()}}
+else if(t.getAttribute("data-k")){wk=t.getAttribute("data-k");segPaint()}});
+renderW();segPaint();
+$("stars").addEventListener("click",function(e){var s=+e.target.getAttribute("data-s");if(!s)return;rating=rating===s?0:s;paintStars()});
+$("c").addEventListener("change",function(){var f=this.files&&this.files[0];if(!f)return;var rd=new FileReader();rd.onload=function(){var im=new Image();im.onload=function(){var s=Math.min(1,160/im.height),cv=document.createElement("canvas");cv.width=Math.max(1,Math.round(im.width*s));cv.height=Math.max(1,Math.round(im.height*s));cv.getContext("2d").drawImage(im,0,0,cv.width,cv.height);cover=cv.toDataURL("image/jpeg",0.7);$("cn").textContent="Capa adicionada ✓"};im.src=rd.result};rd.readAsDataURL(f)});
+resetExtra();
+$("a").addEventListener("keydown",function(e){if(e.key==="Enter")add()});
+$("t").addEventListener("keydown",function(e){if(e.key==="Enter")$("a").focus()});
+$("list").addEventListener("click",function(e){var d=e.target.getAttribute("data-del");
+if(d===null)return;var b=books[+d];if(b&&confirm("Remover “"+b.t+"” da biblioteca?")){books.splice(+d,1);save();render()}});
+
+$("bkOut").addEventListener("click",function(){
+var data=JSON.stringify({app:"minha-biblioteca",v:2,exportado:new Date().toISOString(),livros:ST.l.b,lista:ST.l.w,filmes:ST.f.b,filmesLista:ST.f.w,series:ST.s.b,seriesLista:ST.s.w});
+var p=(window.claude&&window.claude.use)?window.claude.use("downloads"):Promise.resolve(null);
+p.then(function(dl){if(!dl){var bl=new Blob([data],{type:"application/json"}),an=document.createElement("a");an.href=URL.createObjectURL(bl);an.download="backup-biblioteca-"+today()+".json";document.body.appendChild(an);an.click();an.remove();toast("Backup gerado.");return}
+return dl.save({filename:"backup-biblioteca-"+today()+".json",data:data}).then(function(){toast("Backup salvo.")})
+}).catch(function(e){if(e&&e.code==="declined")return;toast("Não foi possível salvar o backup.")})});
+$("bkIn").addEventListener("change",function(){var f=this.files&&this.files[0],inp=this;if(!f)return;var rd=new FileReader();
+rd.onload=function(){inp.value="";try{var o=JSON.parse(rd.result);
+if(!o||!Array.isArray(o.livros)||!Array.isArray(o.lista))throw 0;
+var ok=function(x){return x&&typeof x.t==="string"&&x.t};
+var nb=o.livros.filter(ok).map(function(x){return{t:String(x.t).slice(0,200),a:String(x.a||"").slice(0,200),d:+x.d||Date.now(),r:clamp(+x.r||0,0,5),w:/^\d{4}-\d{2}-\d{2}$/.test(x.w||"")?x.w:"",c:typeof x.c==="string"&&x.c.indexOf("data:image/")===0?x.c:""}});
+var nw=o.lista.filter(ok).map(function(x){return{t:String(x.t).slice(0,200),a:String(x.a||"").slice(0,200),k:x.k==="p"?"p":"i"}});
+var cl=function(a,sr){return a.filter(ok).map(function(x){var r={t:String(x.t).slice(0,200),a:String(x.a||"").slice(0,200),d:+x.d||Date.now(),r:clamp(+x.r||0,0,5),w:/^\d{4}-\d{2}-\d{2}$/.test(x.w||"")?x.w:"",c:typeof x.c==="string"&&x.c.indexOf("data:image/")===0?x.c:""};if(sr){r.s=Math.max(1,Math.floor(+x.s)||1);r.e=Math.max(0,Math.floor(+x.e)||0);r.u=/^\d{4}-\d{2}-\d{2}$/.test(x.u||"")?x.u:""}return r})};
+var cw=function(a){return a.filter(ok).map(function(x){return{t:String(x.t).slice(0,200),a:String(x.a||"").slice(0,200),k:x.k==="p"?"p":"i"}})};
+var nf=Array.isArray(o.filmes)?cl(o.filmes):ST.f.b,nfw=Array.isArray(o.filmesLista)?cw(o.filmesLista):ST.f.w,ns=Array.isArray(o.series)?cl(o.series,1):ST.s.b,nsw=Array.isArray(o.seriesLista)?cw(o.seriesLista):ST.s.w;
+if(!confirm("Substituir os dados atuais por este backup? Ele tem "+nb.length+" livros, "+nf.length+" filmes e "+ns.length+" séries, além das listas."))return;
+ST.l={b:nb,w:nw};ST.f={b:nf,w:nfw};ST.s={b:ns,w:nsw};Object.keys(CF).forEach(function(k){try{localStorage.setItem(CF[k].key,JSON.stringify(ST[k].b));localStorage.setItem(CF[k].wk,JSON.stringify(ST[k].w))}catch(e){}});setCol(col);toast("Backup restaurado.")}catch(e){toast("Esse arquivo não parece um backup válido.")}};
+rd.readAsText(f)});
+var s0="f";try{s0=localStorage.getItem("biblioteca-aba")||"f"}catch(e){}setCol(CF[s0]?s0:"f");
+if(typeof THREE!=="undefined"&&initGL()){bindInput();render();renderer.setAnimationLoop(tick)}
+else{if(typeof THREE==="undefined")stage.innerHTML='<div class="nogl">Não foi possível carregar o 3D. Verifique a conexão e recarregue.</div>';render()}
+})();
+</script>
+</body>
+</html>
